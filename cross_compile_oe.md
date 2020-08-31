@@ -37,7 +37,8 @@ meta-ros/scripts/mcf -f conf/$cfg
 unset BDIR BITBAKEDIR BUILDDIR OECORELAYERCONF OECORELOCALCONF OECORENOTESCONF OEROOT TEMPLATECONF
 source openembedded-core/oe-init-build-env && cd -
 ```
-8. Add this to the bottom of `~/ros-roborio/conf/local.conf`
+8. Create `~/ros-roborio/conf/local.conf` and paste the following text into it, replacing
+`<ABSOLUTE-PATH-TO-DIRECTORY-ON-SEPARATE-DISK>` with with a path to a directory on a partition of your disk containing at least 100 GB. 
 ```
 # ROS-ADDITIONS-BEGIN
 # ^^^^^^^^^^^^^^^^^^^ In the future, tools will expect to find this line.
@@ -46,7 +47,7 @@ source openembedded-core/oe-init-build-env && cd -
 ROS_LOCAL_CONF_SETTINGS_VERSION = "2.1"
 
 # If not using mcf, replace ${MCF_DISTRO} with the DISTRO being used.
-DISTRO = "${MCF_DISTRO}"
+DISTRO = "nodistro"
 
 # If not using mcf, set ROS_DISTRO in conf/bblayers.conf .
 
@@ -87,6 +88,36 @@ INHERIT += "rm_work"
 
 # Any other additions to the file go here.
 
+CONNECTIVITY_CHECK_URIS = "https://www.google.com/"
+
+
 # vvvvvvvvvvvvvvvvv In the future, tools will expect to find this line.
 # ROS-ADDITIONS-END
 ```
+9. Clone the `meta-xilinx` repository to access the roboRIO architecture OE layer
+```
+git clone https://github.com/Xilinx/meta-xilinx.git
+```
+10. Add the `meta-xilinx-bsp` layer to ~/ros-roborio/conf/bblayers.conf. Edit the `BBLAYERS` variable to be the following by adding the line `${TOPDIR}/meta-xilinx/meta-xilinx-bsp \`:
+```
+BBLAYERS ?= " \
+    ${META_RASPBERRYPI_LAYER} \
+    ${META_ROS1_MELODIC_LAYER} \
+    ${META_ROS1_LAYER} \
+    ${META_ROS_COMMON_LAYER} \
+    ${META_PYTHON2_LAYER} \
+    ${META_PYTHON_LAYER} \
+    ${META_OE_LAYER} \
+    ${META_LAYER} \
+    ${TOPDIR}/meta-xilinx/meta-xilinx-bsp \
+"
+```
+11. Set the `MACHINE` environment variable to the RoboRIO's processor, `cortexa9-zynq`
+```
+export machine=cortexa9-zynq
+```
+12. Build ROS
+```
+bitbake packagegroups-ros1-comm.bb
+```
+ 
